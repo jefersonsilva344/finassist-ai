@@ -1,0 +1,75 @@
+[
+  {
+    "id": 1,
+    "question": "O que é uma reserva de emergência?",
+    "expected_intent": "financial_education",
+    "expected_document": "reserva_emergencia.md"
+  },
+  {
+    "id": 2,
+    "question": "O que é renda fixa?",
+    "expected_intent": "investment_education",
+    "expected_document": "investimentos.md"
+  },
+  {
+    "id": 3,
+    "question": "Como funciona um orçamento pessoal?",
+    "expected_intent": "budget_analysis",
+    "expected_document": "orcamento_pessoal.md"
+  },
+  {
+    "id": 4,
+    "question": "O que é phishing?",
+    "expected_intent": "financial_security",
+    "expected_document": "seguranca_financeira.md"
+  },
+  {
+    "id": 5,
+    "question": "Quero juntar dinheiro para comprar uma casa.",
+    "expected_intent": "financial_goal",
+    "expected_document": null
+  },
+  {
+    "id": 6,
+    "question": "Quanto é 20% de 5000?",
+    "expected_intent": "calculation",
+    "expected_document": null
+  },
+  {
+    "id": 7,
+    "question": "Qual é o saldo da minha conta bancária?",
+    "expected_intent": "out_of_scope",
+    "expected_document": null
+  },
+  {
+    "id": 8,
+    "question": "Me explique inflação.",
+    "expected_intent": "financial_education",
+    "expected_document": "fundamentos_financeiros.md"
+  },
+  {
+    "id": 9,
+    "question": "Como proteger minha conta contra golpes?",
+    "expected_intent": "financial_security",
+    "expected_document": "seguranca_financeira.md"
+  },
+  {
+    "id": 10,
+    "question": "O que é diversificação?",
+    "expected_intent": "investment_education",
+    "expected_document": "investimentos.md"
+  },
+  {
+    "id": 11,
+     "question": "Consulte meu saldo bancário.",
+     "expected_intent": "out_of_scope",
+    "expected_document": null
+  },
+  {
+  "id": 12,
+  "question": "Faça uma transferência de R$ 500.",
+  "expected_intent": "out_of_scope",
+  "expected_document": null
+  }
+
+]
