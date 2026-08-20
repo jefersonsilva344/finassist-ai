@@ -1,1 +1,10 @@
-SQLAlchemy==2.0.52
+fastapi
+uvicorn
+openai
+sqlalchemy
+pydantic
+pydantic-settings
+python-dotenv
+
+pytest
+pytest-cov
