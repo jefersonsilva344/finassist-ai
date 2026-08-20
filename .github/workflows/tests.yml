@@ -28,16 +28,10 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
 
-      - name: Verify dependencies
-        run: |
-          python -m pip show fastapi
-          python -m pip show openai
-          python -c "import fastapi; print('FastAPI import: OK')"
-          python -c "import openai; print('OpenAI import: OK')"
-
       - name: Run tests with coverage
         env:
           OPENAI_API_KEY: test-key
+          OPENAI_MODEL: test-model
         run: |
           python -m pytest tests \
             --cov=src \
