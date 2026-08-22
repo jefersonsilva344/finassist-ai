@@ -1,5 +1,4 @@
 from src.agent.session import SessionState
-from src.agent.memory import add_expense
 from src.tools.category_report import (
     build_category_report,
 )
@@ -10,20 +9,17 @@ def test_category_report():
 
     session.update_income(4000)
 
-    add_expense(
-        session,
+    session.add_expense_category(
         "aluguel",
         1500,
     )
 
-    add_expense(
-        session,
+    session.add_expense_category(
         "alimentação",
         600,
     )
 
-    add_expense(
-        session,
+    session.add_expense_category(
         "transporte",
         300,
     )

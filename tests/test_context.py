@@ -1,13 +1,11 @@
-from src.agent.context import detect_follow_up
-from src.agent.session import SessionState
-from src.agent.memory import add_expense
-
 from src.agent.context import (
     detect_follow_up,
     detect_category_query,
     detect_category_percentage_query,
     detect_category_summary_query,
 )
+
+from src.agent.session import SessionState
 
 
 def create_complete_session() -> SessionState:
@@ -18,6 +16,10 @@ def create_complete_session() -> SessionState:
 
     return session
 
+
+# ==========================================================
+# TESTES DE FOLLOW-UP
+# ==========================================================
 
 def test_detect_balance_follow_up():
     session = create_complete_session()
@@ -76,6 +78,10 @@ def test_unknown_follow_up_returns_none():
     assert result is None
 
 
+# ==========================================================
+# TESTES DE CONSULTA POR CATEGORIA
+# ==========================================================
+
 def test_detect_category_query():
     session = SessionState()
 
@@ -118,7 +124,8 @@ def test_category_query_without_categories_returns_none():
 
     assert result is None
 
-    # ==========================================================
+
+# ==========================================================
 # TESTES DE CONSULTA DE PERCENTUAL POR CATEGORIA
 # ==========================================================
 
@@ -127,8 +134,7 @@ def test_detect_category_percentage_query():
 
     session.update_income(4000)
 
-    add_expense(
-        session,
+    session.add_expense_category(
         "alimentação",
         600,
     )
@@ -146,8 +152,7 @@ def test_detect_rent_percentage_query():
 
     session.update_income(4000)
 
-    add_expense(
-        session,
+    session.add_expense_category(
         "aluguel",
         1500,
     )
@@ -163,8 +168,7 @@ def test_detect_rent_percentage_query():
 def test_category_percentage_query_without_income_returns_none():
     session = SessionState()
 
-    add_expense(
-        session,
+    session.add_expense_category(
         "alimentação",
         600,
     )
@@ -184,8 +188,7 @@ def test_category_percentage_query_without_income_returns_none():
 def test_detect_category_summary_query():
     session = SessionState()
 
-    add_expense(
-        session,
+    session.add_expense_category(
         "alimentação",
         600,
     )
@@ -201,8 +204,7 @@ def test_detect_category_summary_query():
 def test_detect_expenses_by_category_query():
     session = SessionState()
 
-    add_expense(
-        session,
+    session.add_expense_category(
         "alimentação",
         600,
     )

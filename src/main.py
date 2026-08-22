@@ -1,4 +1,5 @@
-from src.agent.agent import FinAssistAgent
+from src.bootstrap.factory import build_application
+from src.persistence.session import get_session_factory
 
 
 def main() -> None:
@@ -9,30 +10,37 @@ def main() -> None:
 
     print("\nDigite 'sair' para encerrar.\n")
 
-    agent = FinAssistAgent()
+    session_factory = get_session_factory()
+    db = session_factory()
 
-    while True:
+    try:
+        container = build_application(db)
 
-        user_message = input("Você: ").strip()
+        while True:
+            user_message = input("Você: ").strip()
 
-        if user_message.lower() == "sair":
-            print("\nFinAssist AI encerrado.")
-            break
+            if user_message.lower() == "sair":
+                print("\nFinAssist AI encerrado.")
+                break
 
-        if not user_message:
-            continue
+            if not user_message:
+                continue
 
-        try:
-            response = agent.answer(
-                user_message
-            )
+            try:
+                response = container.financial_flow.process_message(
+                    external_user_id="cli-user",
+                    message=user_message,
+                )
 
-            print(f"\nFinAssist AI: {response}\n")
+                print(f"\nFinAssist AI: {response}\n")
 
-        except Exception as error:
-            print(
-                f"\nErro ao processar solicitação: {error}\n"
-            )
+            except Exception as error:
+                print(
+                    f"\nErro ao processar solicitação: {error}\n"
+                )
+
+    finally:
+        db.close()
 
 
 if __name__ == "__main__":

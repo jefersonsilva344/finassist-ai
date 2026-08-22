@@ -10,7 +10,6 @@ from ..prompts.prompts import SYSTEM_PROMPT, RESPONSE_PROMPT
 from .intent import classify_intent
 
 from .decision import make_decision
-from src.tools.extractor import extract_budget_values
 from .sufficiency import check_budget_sufficiency
 
 from .session import SessionState
@@ -27,22 +26,14 @@ from src.tools.category_analyzer import (
     get_category_summary,
 )
 
-from src.tools.extractor import (
-    extract_categorized_expenses,
+from src.application.services.financial_memory_service import (
+    FinancialMemoryService,
 )
-
-from .memory import add_expense
 
 from src.tools.formatters import format_brl
 
-import os
+from src.llm.client import LLMClient
 
-from openai import OpenAI
-
-OPENAI_MODEL = os.getenv(
-    "OPENAI_MODEL",
-    "gpt-4o-mini",
-)
 
 
 class FinAssistAgent:
@@ -59,12 +50,34 @@ class FinAssistAgent:
 
     def __init__(
         self,
-        client: OpenAI,
-    )-> None:
+        client: LLMClient
+    ) -> None:
 
         self.client = client
+
         self.session = SessionState()
 
+        self.memory_service = (
+            FinancialMemoryService(
+                session=self.session,
+            )
+        )
+
+    @property
+    def session(self) -> SessionState:
+        return self._session
+
+
+    @session.setter
+    def session(
+        self,
+        value: SessionState,
+    ) -> None:
+
+        self._session = value
+
+        if hasattr(self, "memory_service"):
+            self.memory_service.session = value
 
 
     def _update_session(
@@ -72,68 +85,35 @@ class FinAssistAgent:
         user_message: str,
     ) -> None:
         """
-        Atualiza a memória financeira da sessão.
+        Atualiza a memória financeira através do
+        FinancialMemoryService.
 
-        Prioridade:
-        1. Receita/despesa geral
-        2. Despesa categorizada
+        Mantido como fachada de compatibilidade para
+        o Agent e testes existentes.
         """
 
-        # ------------------------------------------------------
-        # Receita / despesa geral
-        # ------------------------------------------------------
+        if not hasattr(self, "memory_service"):
+            self.memory_service = FinancialMemoryService(
+                self.session
+            )
 
-        budget_data = extract_budget_values(
+        self.memory_service.update_from_message(
             user_message
         )
 
-        if budget_data is not None:
 
-            income = budget_data.get("income")
-            expenses = budget_data.get("expenses")
-
-            if income is not None:
-                self.session.update_income(
-                    income
-                )
-
-            if expenses is not None:
-                self.session.update_expenses(
-                    expenses
-                )
-
-        # ------------------------------------------------------
-        # Despesa categorizada
-        # ------------------------------------------------------
-
-        categorized_expenses = extract_categorized_expenses(
-        user_message
-        )
-
-        for category, amount in categorized_expenses:
-
-            add_expense(
-                session=self.session,
-                category=category,
-                amount=amount,
-            )
-
-        
     def _get_budget_data(
         self,
-        user_message: str,
+        user_message: str | None = None,
     ) -> dict[str, float | None]:
         """
         Retorna o estado financeiro atual da sessão.
 
-        A atualização da memória acontece exclusivamente
-        em _update_session().
+        user_message é mantido por compatibilidade com
+        o contrato anterior do Agent.
         """
 
-        return {
-            "income": self.session.income,
-            "expenses": self.session.expenses,
-        }
+        return self.memory_service.get_budget_data()
 
 
     def _handle_category_query(
@@ -420,8 +400,8 @@ class FinAssistAgent:
     ) -> str:
 
 
-        # 1.1 Atualizar memória
-        self._update_session(
+        # 1.1 Atualizar memória financeira
+        self.memory_service.update_from_message(
             user_message
         )
 
@@ -526,22 +506,21 @@ class FinAssistAgent:
         )
 
         # 6. LLM
-        response = self.client.responses.create(
-            model=OPENAI_MODEL,
-            instructions=SYSTEM_PROMPT,
-            input=(
-                f"INTENÇÃO IDENTIFICADA:\n"
-                f"{decision.intent}\n\n"
-                f"DECISÃO DO AGENTE:\n"
-                f"{decision.reason}\n\n"
-                f"REQUER CONHECIMENTO:\n"
-                f"{decision.requires_knowledge}\n\n"
-                f"REQUER FERRAMENTA:\n"
-                f"{decision.requires_tool}\n\n"
-                f"STATUS DAS INFORMAÇÕES:\n"
-                f"{information_status}\n\n"
-                f"{prompt}"
-            ),
-        )
+        llm_input = (
+            f"INTENÇÃO IDENTIFICADA:\n"
+            f"{decision.intent}\n\n"
+            f"DECISÃO DO AGENTE:\n"
+            f"{decision.reason}\n\n"
+            f"REQUER CONHECIMENTO:\n"
+            f"{decision.requires_knowledge}\n\n"
+            f"REQUER FERRAMENTA:\n"
+            f"{decision.requires_tool}\n\n"
+            f"STATUS DAS INFORMAÇÕES:\n"
+            f"{information_status}\n\n"
+            f"{prompt}"
+            )
 
-        return response.output_text
+        return self.client.generate(
+            system_prompt=SYSTEM_PROMPT,
+            user_message=llm_input,
+        )    

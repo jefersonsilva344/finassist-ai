@@ -107,6 +107,11 @@ class FinancialPersistenceService:
                     str(state.expenses)
                 )
 
+            elif state.expenses is not None:
+                period.total_expenses = Decimal(
+                    str(state.expenses)
+                )
+
         # ======================================================
         # DESPESAS CATEGORIZADAS
         # ======================================================

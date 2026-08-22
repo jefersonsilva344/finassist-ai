@@ -5,9 +5,7 @@ def extract_budget_values(
     message: str,
 ) -> dict[str, float | None] | None:
     """
-    Extrai informações financeiras de uma mensagem.
-
-    Pode retornar dados parciais.
+    Extrai renda e despesas genéricas de uma mensagem.
 
     Exemplos:
 
@@ -19,9 +17,6 @@ def extract_budget_values(
 
     "Recebo R$ 4000 e gasto R$ 3000"
     -> {"income": 4000.0, "expenses": 3000.0}
-
-    Caso nenhum valor seja encontrado:
-    -> None
     """
 
     text = message.lower()
@@ -64,12 +59,8 @@ def _extract_first(
     text: str,
     patterns: list[str],
 ) -> float | None:
-
     for pattern in patterns:
-        match = re.search(
-            pattern,
-            text,
-        )
+        match = re.search(pattern, text)
 
         if match:
             return _parse_number(
@@ -81,8 +72,7 @@ def _extract_first(
 
 def _parse_number(value: str) -> float:
     """
-    Converte formatos brasileiros e internacionais
-    para float.
+    Converte formatos brasileiros e internacionais.
 
     Exemplos:
 
@@ -117,7 +107,7 @@ def extract_categorized_expense(
     message: str,
 ) -> tuple[str, float] | None:
     """
-    Extrai uma despesa acompanhada de categoria.
+    Extrai uma única despesa categorizada.
 
     Exemplos:
 
@@ -127,104 +117,16 @@ def extract_categorized_expense(
     "Gastei R$ 600 com alimentação"
     -> ("alimentação", 600.0)
 
-    "Aluguel R$ 1500"
-    -> ("aluguel", 1500.0)
-
-    Mensagens como:
-
-    "Recebo R$ 4000"
-
-    não são consideradas despesas categorizadas.
+    Caso nenhuma despesa categorizada seja encontrada:
+    -> None
     """
 
-    text = message.lower().strip()
+    expenses = extract_categorized_expenses(message)
 
-    # ------------------------------------------------------
-    # Formato:
-    # "Gasto R$ 1500 de aluguel"
-    # "Gastei R$ 600 com alimentação"
-    # "Despesa R$ 800 em transporte"
-    # ------------------------------------------------------
-
-    pattern_expense_with_category = (
-        r"(?:gasto|gastei|despesa|despesas)"
-        r"\s+"
-        r"r?\$?\s*([\d.,]+)"
-        r"\s+"
-        r"(?:de|com|em)"
-        r"\s+"
-        r"(.+)"
-    )
-
-    match = re.search(
-        pattern_expense_with_category,
-        text,
-    )
-
-    if match:
-
-        amount = _parse_number(
-            match.group(1)
-        )
-
-        category = match.group(2).strip()
-
-        if category:
-            return (
-                category,
-                amount,
-            )
-
-    # ------------------------------------------------------
-    # Formato:
-    # "Aluguel R$ 1500"
-    # "Alimentação R$ 600"
-    # "Transporte R$ 300"
-    #
-    # Restrição importante:
-    # não aceitar verbos como categoria.
-    # ------------------------------------------------------
-
-    pattern_category_first = (
-        r"^"
-        r"(?!recebo\b)"
-        r"(?!ganho\b)"
-        r"(?!ganha\b)"
-        r"(?!renda\b)"
-        r"(?!receita\b)"
-        r"(?!salário\b)"
-        r"(?!salario\b)"
-        r"(?!gasto\b)"
-        r"(?!gastei\b)"
-        r"(?!despesa\b)"
-        r"(?!despesas\b)"
-        r"(.+?)"
-        r"\s+"
-        r"r?\$?\s*([\d.,]+)"
-        r"$"
-    )
-
-    match = re.search(
-        pattern_category_first,
-        text,
-    )
-
-    if not match:
+    if not expenses:
         return None
 
-    category = match.group(1).strip()
-
-    amount = _parse_number(
-        match.group(2)
-    )
-
-    if not category:
-        return None
-
-    return (
-        category,
-        amount,
-    )
+    return expenses[0]
 
 
 def extract_categorized_expenses(
@@ -253,27 +155,30 @@ def extract_categorized_expenses(
 
     expenses: list[tuple[str, float]] = []
 
-    # ------------------------------------------------------
-    # FORMATO:
+    # ======================================================
+    # VALOR PRIMEIRO
     #
     # R$ 1500 de aluguel
     # R$ 800 com alimentação
     # R$ 400 em transporte
-    # ------------------------------------------------------
+    # ======================================================
 
     pattern_amount_first = (
         r"r?\$?\s*([\d.,]+)"
         r"\s+"
         r"(?:de|com|em)"
         r"\s+"
-        r"([a-záàâãéêíóôõúç]+)"
+        r"(aluguel|moradia|alimentação|alimentacao|"
+        r"comida|transporte|ônibus|onibus|uber|"
+        r"contas|luz|água|agua|internet|"
+        r"dívida|divida|dívidas|dividas|lazer)"
+        r"\b"
     )
 
     for match in re.finditer(
         pattern_amount_first,
         text,
     ):
-
         amount = _parse_number(
             match.group(1)
         )
@@ -287,20 +192,20 @@ def extract_categorized_expenses(
             )
         )
 
-    # ------------------------------------------------------
-    # FORMATO:
+    # ======================================================
+    # CATEGORIA PRIMEIRO
     #
     # aluguel R$ 1500
     # alimentação R$ 800
     # transporte R$ 400
-    # ------------------------------------------------------
+    # ======================================================
 
     pattern_category_first = (
         r"\b"
         r"(aluguel|moradia|alimentação|alimentacao|"
         r"comida|transporte|ônibus|onibus|uber|"
         r"contas|luz|água|agua|internet|"
-        r"dívida|divida|dívidas|lazer)"
+        r"dívida|divida|dívidas|dividas|lazer)"
         r"\s+"
         r"r?\$?\s*([\d.,]+)"
     )
@@ -309,7 +214,6 @@ def extract_categorized_expenses(
         pattern_category_first,
         text,
     ):
-
         category = match.group(1).strip()
 
         amount = _parse_number(

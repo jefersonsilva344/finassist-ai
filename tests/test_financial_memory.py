@@ -1,8 +1,5 @@
 from src.agent.session import SessionState
-from src.agent.memory import (
-    add_expense,
-    normalize_category,
-)
+from src.agent.category import normalize_category
 
 
 def test_session_starts_without_categories():
@@ -14,8 +11,7 @@ def test_session_starts_without_categories():
 def test_add_expense_category():
     session = SessionState()
 
-    add_expense(
-        session,
+    session.add_expense_category(
         "aluguel",
         1500,
     )
@@ -28,14 +24,12 @@ def test_add_expense_category():
 def test_same_category_is_accumulated():
     session = SessionState()
 
-    add_expense(
-        session,
+    session.add_expense_category(
         "aluguel",
         1500,
     )
 
-    add_expense(
-        session,
+    session.add_expense_category(
         "aluguel",
         500,
     )
@@ -48,14 +42,12 @@ def test_same_category_is_accumulated():
 def test_expenses_are_updated():
     session = SessionState()
 
-    add_expense(
-        session,
+    session.add_expense_category(
         "alimentação",
         600,
     )
 
-    add_expense(
-        session,
+    session.add_expense_category(
         "transporte",
         400,
     )
@@ -77,7 +69,6 @@ def test_category_alias():
     ) == "alimentação"
 
 
-
 def test_expenses_sync_with_categories():
     """
     O total de despesas deve ser igual à soma
@@ -86,20 +77,17 @@ def test_expenses_sync_with_categories():
 
     session = SessionState()
 
-    add_expense(
-        session,
+    session.add_expense_category(
         "aluguel",
         1500,
     )
 
-    add_expense(
-        session,
+    session.add_expense_category(
         "alimentação",
         600,
     )
 
-    add_expense(
-        session,
+    session.add_expense_category(
         "transporte",
         300,
     )
@@ -115,21 +103,19 @@ def test_expense_categories_are_source_of_truth():
 
     session = SessionState()
 
-    add_expense(
-        session,
+    session.add_expense_category(
         "aluguel",
         1500,
     )
 
-    add_expense(
-        session,
+    session.add_expense_category(
         "alimentação",
         600,
     )
 
     session.update_expenses(9999)
 
-    assert session.expenses == 2100  
+    assert session.expenses == 2100
 
 
 def test_has_categorized_expenses():
@@ -140,12 +126,17 @@ def test_has_categorized_expenses():
 
     session = SessionState()
 
-    assert session.has_categorized_expenses() is False
+    assert (
+        session.has_categorized_expenses()
+        is False
+    )
 
-    add_expense(
-        session,
+    session.add_expense_category(
         "transporte",
         300,
     )
 
-    assert session.has_categorized_expenses() is True
+    assert (
+        session.has_categorized_expenses()
+        is True
+    )

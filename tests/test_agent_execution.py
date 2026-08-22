@@ -201,10 +201,7 @@ def test_answer_includes_deterministic_results_in_llm_context(
         client=MagicMock()
     )
 
-    response = MagicMock()
-    response.output_text = "Resposta final"
-
-    agent.client.responses.create.return_value = response
+    agent.client.generate.return_value = "Resposta final"
 
     agent._update_session = MagicMock()
     agent._handle_follow_up = MagicMock(
@@ -264,17 +261,18 @@ def test_answer_includes_deterministic_results_in_llm_context(
         "Analise meu orçamento"
     )
 
+    agent.client.generate.assert_called_once()
+
     assert result == "Resposta final"
 
-    call = agent.client.responses.create.call_args
+    call = agent.client.generate.call_args
 
     assert call is not None
 
-    input_text = call.kwargs["input"]
+    user_message = call.kwargs["user_message"]
 
-    assert "CÁLCULO FINANCEIRO DETERMINÍSTICO:" in input_text
-    assert "Saldo: R$ 1000.00" in input_text
-    assert "INFORMAÇÕES SUFICIENTES." in input_text
+    assert "CÁLCULO FINANCEIRO DETERMINÍSTICO:" in user_message
+    assert "Saldo: R$ 1000.00" in user_message
 
 
 def test_answer_includes_missing_information_in_llm_context(
@@ -285,10 +283,9 @@ def test_answer_includes_missing_information_in_llm_context(
         client=MagicMock()
     )
 
-    response = MagicMock()
-    response.output_text = "Preciso de mais informações."
-
-    agent.client.responses.create.return_value = response
+    agent.client.generate.return_value = (
+        "Preciso de mais informações."
+    )
 
     agent._update_session = MagicMock()
     agent._handle_follow_up = MagicMock(
@@ -347,10 +344,12 @@ def test_answer_includes_missing_information_in_llm_context(
 
     assert result == "Preciso de mais informações."
 
-    call = agent.client.responses.create.call_args
+    call = agent.client.generate.call_args
 
-    input_text = call.kwargs["input"]
+    assert call is not None
 
-    assert "INFORMAÇÕES INSUFICIENTES." in input_text
-    assert "Dados ausentes: expenses" in input_text
-    assert "As despesas não foram informadas." in input_text
+    user_message = call.kwargs["user_message"]
+
+    assert "INFORMAÇÕES INSUFICIENTES." in user_message
+    assert "Dados ausentes: expenses" in user_message
+    assert "As despesas não foram informadas." in user_message

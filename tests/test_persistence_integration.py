@@ -632,4 +632,3 @@ def test_persisted_financial_data_can_be_used_for_balance_calculation(
 
     assert total_expenses == Decimal("2700.00")
     assert balance == Decimal("2300.00")
-

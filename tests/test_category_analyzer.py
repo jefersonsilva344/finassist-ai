@@ -1,5 +1,4 @@
 from src.agent.session import SessionState
-from src.agent.memory import add_expense
 from src.tools.category_analyzer import (
     calculate_category_percentages,
     get_category_summary,
@@ -11,20 +10,17 @@ def test_calculate_category_percentages():
 
     session.update_income(4000)
 
-    add_expense(
-        session,
+    session.add_expense_category(
         "aluguel",
         1500,
     )
 
-    add_expense(
-        session,
+    session.add_expense_category(
         "alimentação",
         600,
     )
 
-    add_expense(
-        session,
+    session.add_expense_category(
         "transporte",
         300,
     )
@@ -43,20 +39,17 @@ def test_category_summary_is_sorted_by_amount():
 
     session.update_income(4000)
 
-    add_expense(
-        session,
+    session.add_expense_category(
         "transporte",
         300,
     )
 
-    add_expense(
-        session,
+    session.add_expense_category(
         "aluguel",
         1500,
     )
 
-    add_expense(
-        session,
+    session.add_expense_category(
         "alimentação",
         600,
     )

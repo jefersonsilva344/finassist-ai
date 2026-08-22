@@ -1,14 +1,11 @@
 from src.agent.agent import FinAssistAgent
 from src.agent.session import SessionState
-from src.agent.memory import add_expense
 
 
 def test_agent_session_stores_income():
     agent = FinAssistAgent.__new__(
         FinAssistAgent
     )
-
-    from src.agent.session import SessionState
 
     agent.session = SessionState()
 
@@ -25,8 +22,6 @@ def test_agent_session_stores_expenses():
         FinAssistAgent
     )
 
-    from src.agent.session import SessionState
-
     agent.session = SessionState()
 
     agent._update_session(
@@ -41,8 +36,6 @@ def test_agent_session_combines_budget():
     agent = FinAssistAgent.__new__(
         FinAssistAgent
     )
-
-    from src.agent.session import SessionState
 
     agent.session = SessionState()
 
@@ -63,8 +56,6 @@ def test_agent_combines_budget_from_multiple_messages():
     agent = FinAssistAgent.__new__(
         FinAssistAgent
     )
-
-    from src.agent.session import SessionState
 
     agent.session = SessionState()
 
@@ -91,7 +82,6 @@ def test_agent_combines_budget_from_multiple_messages():
     assert second["expenses"] == 3000
 
 
-
 def test_expenses_sync_after_category_accumulation():
     """
     O total de despesas deve continuar sincronizado
@@ -100,50 +90,17 @@ def test_expenses_sync_after_category_accumulation():
 
     session = SessionState()
 
-    add_expense(
-        session,
+    session.add_expense_category(
         "aluguel",
         1500,
     )
 
-    add_expense(
-        session,
+    session.add_expense_category(
         "alimentação",
         600,
     )
 
-    add_expense(
-        session,
-        "alimentação",
-        200,
-    )
-
-    assert session.expense_categories["alimentação"] == 800
-    assert session.expenses == 2300
-
-
-def test_expenses_sync_after_category_accumulation():
-    """
-    O total de despesas deve continuar sincronizado
-    quando uma categoria recebe novos gastos.
-    """
-
-    session = SessionState()
-
-    add_expense(
-        session,
-        "aluguel",
-        1500,
-    )
-
-    add_expense(
-        session,
-        "alimentação",
-        600,
-    )
-
-    add_expense(
-        session,
+    session.add_expense_category(
         "alimentação",
         200,
     )
@@ -160,14 +117,12 @@ def test_aliases_are_reflected_in_total_expenses():
 
     session = SessionState()
 
-    add_expense(
-        session,
+    session.add_expense_category(
         "aluguel",
         1500,
     )
 
-    add_expense(
-        session,
+    session.add_expense_category(
         "moradia",
         500,
     )

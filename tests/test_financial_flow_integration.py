@@ -28,9 +28,14 @@ class FakeResponses:
         )
 
 
-class FakeOpenAI:
-    def __init__(self, *args, **kwargs):
-        self.responses = FakeResponses()
+class FakeLLMClient:
+
+    def generate(
+        self,
+        system_prompt: str,
+        user_message: str,
+    ) -> str:
+        return "Resposta simulada do assistente"
 
 
 def create_test_session():
@@ -103,11 +108,11 @@ def test_complete_financial_business_flow():
         # 3. Criar aplicação através do Composition Root
         # ======================================================
 
-        fake_openai = FakeOpenAI()
+        fake_llm_client = FakeLLMClient()
 
         container = build_container(
             db=db,
-            openai_client=fake_openai,
+            llm_client=fake_llm_client,
         )
 
         flow = container.financial_flow
@@ -287,11 +292,11 @@ def test_complete_financial_business_flow():
         # diretamente. O Composition Root continua sendo
         # responsável pela montagem da aplicação.
 
-        new_fake_openai = FakeOpenAI()
+        new_fake_llm_client = FakeLLMClient()
 
         new_container = build_container(
             db=db,
-            openai_client=new_fake_openai,
+            llm_client=new_fake_llm_client,
         )
 
         new_flow = new_container.financial_flow
@@ -329,6 +334,8 @@ def test_complete_financial_business_flow():
             new_agent.session.expenses
             == 2700.0
         )
+
+    
 
     finally:
         db.close()

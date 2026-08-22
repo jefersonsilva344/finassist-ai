@@ -4,10 +4,10 @@ from src.api.schemas.financial_message import (
     FinancialMessageRequest,
     FinancialMessageResponse,
 )
+from src.bootstrap.factory import build_application
 
 from src.bootstrap.container import (
     ApplicationContainer,
-    build_container,
 )
 
 from src.persistence.session import get_db_session
@@ -23,7 +23,7 @@ router = APIRouter(
 def get_container(
     db=Depends(get_db_session),
 ) -> ApplicationContainer:
-    return build_container(db)
+    return build_application(db)
 
 
 @router.post(
@@ -39,8 +39,7 @@ def process_financial_message(
     request_id = request.state.request_id
 
     logger.info(
-        "Financial message processing started"
-        "request_id=%s",
+        "Financial message processing started | request_id=%s",
         request_id,
     )
 
@@ -50,8 +49,7 @@ def process_financial_message(
     )
 
     logger.info(
-        "Financial message processing completed"
-        "request_id=%s",
+        "Financial message processing completed | request_id=%s",
         request_id,
     )
 

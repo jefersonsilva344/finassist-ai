@@ -50,6 +50,17 @@ class FinancialFlow:
             )
         )
 
+        print(
+            "[DEBUG] ESTADO CARREGADO:",
+             f"income={self.agent.session.income}",
+               f"expenses={self.agent.session.expenses}",
+        )
+
+        print(
+            "[DEBUG] CATEGORIAS CARREGADAS:",
+            self.agent.session.expense_categories,
+        )
+
         response = self.agent.answer(
             message
         )

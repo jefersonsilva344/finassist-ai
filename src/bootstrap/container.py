@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 
-from openai import OpenAI
 from sqlalchemy.orm import Session
 
 from src.agent.agent import FinAssistAgent
 from src.application.financial_flow import FinancialFlow
 from src.config.settings import OPENAI_API_KEY
+from src.llm.client import LLMClient
 from src.persistence.services.context_service import ContextService
 from src.persistence.services.financial_service import (
     FinancialPersistenceService,
@@ -26,7 +26,7 @@ class ApplicationContainer:
 
 def build_container(
     db: Session,
-    openai_client=None,
+    llm_client: LLMClient | None = None,
 ) -> ApplicationContainer:
     """
     Monta todas as dependências da aplicação.
@@ -50,11 +50,11 @@ def build_container(
     )
 
     # ------------------------------------------------------
-    # External client
+    # LLM
     # ------------------------------------------------------
 
-    if openai_client is None:
-        openai_client = OpenAI(
+    if llm_client is None:
+        llm_client = LLMClient(
             api_key=OPENAI_API_KEY,
         )
 
@@ -63,7 +63,7 @@ def build_container(
     # ------------------------------------------------------
 
     agent = FinAssistAgent(
-        client=openai_client,
+        client=llm_client,
     )
 
     # ------------------------------------------------------

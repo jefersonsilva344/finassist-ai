@@ -1,5 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
+from sqlalchemy.pool import StaticPool
 
 from src.persistence.config import get_database_url
 
@@ -16,14 +17,19 @@ class Base(DeclarativeBase):
 
 
 connect_args = {}
+engine_kwargs = {}
 
 if DATABASE_URL.startswith("sqlite"):
     connect_args["check_same_thread"] = False
+
+    if DATABASE_URL == "sqlite:///:memory:":
+        engine_kwargs["poolclass"] = StaticPool
 
 
 engine = create_engine(
     DATABASE_URL,
     connect_args=connect_args,
+    **engine_kwargs,
 )
 
 
